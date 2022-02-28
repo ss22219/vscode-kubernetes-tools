@@ -287,7 +287,7 @@
                         "vs-kubernetes.nodejs-remote-root": "",
                         "vs-kubernetes.nodejs-debug-port": 9229,
                         "vs-kubernetes.dotnet-vsdbg-path": "/vsdbg/vsdbg",
-                        "vs-kubernetes.dotnet-source-file-map": "/src",
+                        "vs-kubernetes.dotnet-source-file-map": "/src,/app",
                         "vs-kubernetes.local-tunnel-debug-provider": "",
                         "checkForMinikubeUpgrade": true,
                         "imageBuildTool": "Docker"

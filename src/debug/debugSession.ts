@@ -121,7 +121,7 @@ export class DebugSession implements IDebugSession {
 
                 // Start debug session.
                 p.report({ message: `Starting ${this.debugProvider!.getDebuggerType()} debug session...`});  // safe because checked outside the lambda
-                await this.startDebugSession(appName, cwd, proxyResult, podName, "", undefined);
+                await this.startDebugSession(appName, cwd, proxyResult, podName, undefined, undefined);
             } catch (error) {
                 vscode.window.showErrorMessage(error);
                 kubeChannel.showOutput(`Debug on Kubernetes failed. The errors were: ${error}.`);
@@ -350,7 +350,7 @@ export class DebugSession implements IDebugSession {
         return proxyResult;
     }
 
-    private async startDebugSession(appName: string | undefined, cwd: string, proxyResult: ProxyResult | undefined, pod: string, container: string, pidToDebug: number | undefined): Promise<void> {
+    private async startDebugSession(appName: string | undefined, cwd: string, proxyResult: ProxyResult | undefined, pod: string, container: string | undefined, pidToDebug: number | undefined): Promise<void> {
         kubeChannel.showOutput("Starting debug session...", "Start debug session");
         const sessionName = appName || `${Date.now()}`;
 
@@ -460,7 +460,7 @@ export class DebugSession implements IDebugSession {
         return forwardingRegExp.test(message);
     }
 
-    private async startDebugging(workspaceFolder: string, sessionName: string, proxyDebugPort: number | undefined, proxyAppPort: number | undefined, pod: string, container: string, pidToDebug: number | undefined, onTerminateCallback: () => Promise<any>): Promise<boolean> {
+    private async startDebugging(workspaceFolder: string, sessionName: string, proxyDebugPort: number | undefined, proxyAppPort: number | undefined, pod: string, container: string | undefined, pidToDebug: number | undefined, onTerminateCallback: () => Promise<any>): Promise<boolean> {
         const disposables: vscode.Disposable[] = [];
         disposables.push(vscode.debug.onDidStartDebugSession((debugSession) => {
             if (debugSession.name === sessionName) {

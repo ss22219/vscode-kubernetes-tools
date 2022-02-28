@@ -32,12 +32,14 @@ export class DotNetDebugProvider implements IDebugProvider {
         return false;
     }
 
-    public async startDebugging(workspaceFolder: string, _sessionName: string, _port: number | undefined, pod: string, container: string, _pidToDebug: number | undefined): Promise<boolean> {
+    public async startDebugging(workspaceFolder: string, _sessionName: string, _port: number | undefined, pod: string, container: string | undefined, _pidToDebug: number | undefined): Promise<boolean> {
         const debugConfiguration: vscode.DebugConfiguration = {
             name: ".NET Core Kubernetes Attach",
             type: "coreclr",
             request: "attach",
             processId : "1",
+            requireExactSource: false,
+            justMyCode: false,
             pipeTransport: {
                 pipeProgram: "kubectl",
                 "pipeArgs": [
@@ -56,8 +58,11 @@ export class DotNetDebugProvider implements IDebugProvider {
         const map = extensionConfig.getDotnetDebugSourceFileMap();
         if (map) {
             try {
-                const json: string = `{"${map.replace(/\\/g, "\\\\")}":"${workspaceFolder.replace(/\\/g, "\\\\")}"}`;
-                const sourceFileMap: JSON = JSON.parse(json);
+                const sourceFileMap: any = {};
+                map.split(',').forEach(path=> {
+                    if(path)
+                        sourceFileMap[path] = workspaceFolder
+                });
                 debugConfiguration['sourceFileMap'] = sourceFileMap;
             } catch (error) {
                 kubeChannel.showOutput(error.message);
