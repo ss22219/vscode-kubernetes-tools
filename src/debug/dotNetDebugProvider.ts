@@ -32,17 +32,25 @@ export class DotNetDebugProvider implements IDebugProvider {
         return false;
     }
 
-    public async startDebugging(workspaceFolder: string, _sessionName: string, _port: number | undefined, pod: string, _pidToDebug: number | undefined): Promise<boolean> {
+    public async startDebugging(workspaceFolder: string, _sessionName: string, _port: number | undefined, pod: string, container: string, _pidToDebug: number | undefined): Promise<boolean> {
         const debugConfiguration: vscode.DebugConfiguration = {
             name: ".NET Core Kubernetes Attach",
             type: "coreclr",
             request: "attach",
+            processId : "1",
             pipeTransport: {
                 pipeProgram: "kubectl",
-                pipeArgs: [ "exec", "-i", pod, "--", "/bin/sh", "-c" ],
+                "pipeArgs": [
+                    "exec",
+                    "-i",
+                    pod,
+                    "-c",
+                    container,
+                    "--"
+                ],
                 debuggerPath: extensionConfig.getDotnetVsdbgPath(),
                 pipeCwd: workspaceFolder,
-                quoteArgs: true
+                quoteArgs: false
             }
         };
         const map = extensionConfig.getDotnetDebugSourceFileMap();

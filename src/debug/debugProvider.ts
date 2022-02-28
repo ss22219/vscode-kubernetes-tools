@@ -38,7 +38,7 @@ export interface IDebugProvider {
      * @param port the debugging port exposed by the target program.
      * @return A thenable that resolves when debugging could be successfully started.
      */
-    startDebugging(workspaceFolder: string, sessionName: string, port: number | undefined, pod: string, pidToDebug: number | undefined): Promise<boolean>;
+    startDebugging(workspaceFolder: string, sessionName: string, port: number | undefined, pod: string, container: string, pidToDebug: number | undefined): Promise<boolean>;
 
     /**
      * The docker image is supported by the provider or not.

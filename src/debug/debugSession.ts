@@ -121,7 +121,7 @@ export class DebugSession implements IDebugSession {
 
                 // Start debug session.
                 p.report({ message: `Starting ${this.debugProvider!.getDebuggerType()} debug session...`});  // safe because checked outside the lambda
-                await this.startDebugSession(appName, cwd, proxyResult, podName, undefined);
+                await this.startDebugSession(appName, cwd, proxyResult, podName, "", undefined);
             } catch (error) {
                 vscode.window.showErrorMessage(error);
                 kubeChannel.showOutput(`Debug on Kubernetes failed. The errors were: ${error}.`);
@@ -196,7 +196,7 @@ export class DebugSession implements IDebugSession {
                 // Start debug session.
                 p.report({ message: `Starting ${this.debugProvider!.getDebuggerType()} debug session...`});  // safe because checked outside lambda
 
-                await this.startDebugSession(undefined, workspaceFolder.uri.fsPath, proxyResult, targetPod, pidToDebug);
+                await this.startDebugSession(undefined, workspaceFolder.uri.fsPath, proxyResult, targetPod, targetContainer, pidToDebug);
             } catch (error) {
                 vscode.window.showErrorMessage(error);
                 kubeChannel.showOutput(`Debug on Kubernetes failed. The errors were: ${error}.`);
@@ -350,14 +350,14 @@ export class DebugSession implements IDebugSession {
         return proxyResult;
     }
 
-    private async startDebugSession(appName: string | undefined, cwd: string, proxyResult: ProxyResult | undefined, pod: string, pidToDebug: number | undefined): Promise<void> {
+    private async startDebugSession(appName: string | undefined, cwd: string, proxyResult: ProxyResult | undefined, pod: string, container: string, pidToDebug: number | undefined): Promise<void> {
         kubeChannel.showOutput("Starting debug session...", "Start debug session");
         const sessionName = appName || `${Date.now()}`;
 
         const proxyDebugPort = proxyResult ? proxyResult.proxyDebugPort : undefined;
         const proxyAppPort = proxyResult ? proxyResult.proxyAppPort : undefined;
 
-        await this.startDebugging(cwd, sessionName, proxyDebugPort, proxyAppPort, pod, pidToDebug, async () => {
+        await this.startDebugging(cwd, sessionName, proxyDebugPort, proxyAppPort, pod, container, pidToDebug, async () => {
             if (proxyResult && proxyResult.proxyProcess) {
                 proxyResult.proxyProcess.kill();
             }
@@ -460,7 +460,7 @@ export class DebugSession implements IDebugSession {
         return forwardingRegExp.test(message);
     }
 
-    private async startDebugging(workspaceFolder: string, sessionName: string, proxyDebugPort: number | undefined, proxyAppPort: number | undefined, pod: string, pidToDebug: number | undefined, onTerminateCallback: () => Promise<any>): Promise<boolean> {
+    private async startDebugging(workspaceFolder: string, sessionName: string, proxyDebugPort: number | undefined, proxyAppPort: number | undefined, pod: string, container: string, pidToDebug: number | undefined, onTerminateCallback: () => Promise<any>): Promise<boolean> {
         const disposables: vscode.Disposable[] = [];
         disposables.push(vscode.debug.onDidStartDebugSession((debugSession) => {
             if (debugSession.name === sessionName) {
@@ -483,7 +483,7 @@ export class DebugSession implements IDebugSession {
             return false;
         }
 
-        const success = await this.debugProvider.startDebugging(workspaceFolder, sessionName, proxyDebugPort, pod, pidToDebug);
+        const success = await this.debugProvider.startDebugging(workspaceFolder, sessionName, proxyDebugPort, pod, container, pidToDebug);
         if (!success) {
             disposables.forEach((d) => d.dispose());
             await onTerminateCallback();
